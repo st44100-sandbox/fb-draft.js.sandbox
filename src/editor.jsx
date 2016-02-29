@@ -44,7 +44,6 @@ export default class MyEditor extends React.Component {
 				}
 			}
 		}
-
 		function getEntityStrategy () {
 			return function (contentBlock, callback) {
   			const text = contentBlock.getText();
@@ -126,6 +125,11 @@ export default class MyEditor extends React.Component {
   }
 
   render () {
+		function blockStyleFn(contentBlock) {
+			if (contentBlock.getType() === 'image') {
+				return 'block-image'
+			}
+		}
     const {editorState} = this.state;
     return (
       <div>
@@ -133,6 +137,7 @@ export default class MyEditor extends React.Component {
         <Editor
           editorState={editorState}
           handleKeyCommand={this.handleKeyCommand.bind(this)}
+					blockStyleFn={blockStyleFn}
           onChange={this.onChange}
         />
       </div>
