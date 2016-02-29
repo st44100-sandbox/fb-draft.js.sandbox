@@ -21,6 +21,59 @@ export default class MyEditor extends React.Component {
 
   constructor (props) {
     super(props)
+		function getImageEntityStrategy (mutability) {
+			return function (contentBlock, callback) {
+				// getType: block type
+				// getText: Text node.
+				if (contentBlock.getType() === 'image') {
+					return true
+				} else {
+					return false
+				}
+			}
+		}
+
+		function getEntityStrategy () {
+			return function (contentBlock, callback) {
+  			const text = contentBlock.getText();
+  			let matchArr, start;
+				let count = 0
+				contentBlock.findEntityRanges(
+					(character) => {
+						const entityKey = character.getEntity();
+						console.log(character, entityKey)
+						if (entityKey === null) {
+							return false;
+						} else {
+							return true;
+						}
+						//return Entity.get(entityKey).getMutability() === mutability;
+					},
+					callback
+				);
+			}
+		}
+
+		const TokenSpan = (props) => {
+			const style = {
+				color: 'red'
+			} 
+			return (
+				<span {...props} style={style}>
+					[Entity]
+					{props.children}
+					[/Entity]
+				</span>
+			)
+		}
+
+		const decorator = new CompositeDecorator([
+			{
+				strategy: getEntityStrategy(),
+				component: TokenSpan
+			}
+		])
+
 		// Start with Empty.
   	//this.state = {editorState: EditorState.createEmpty()};
 		
@@ -28,7 +81,8 @@ export default class MyEditor extends React.Component {
 		const blocks = convertFromRaw(DummyContent)
 		this.state = {
 			editorState: EditorState.createWithContent(
-				ContentState.createFromBlockArray(blocks)
+				ContentState.createFromBlockArray(blocks),
+				decorator
 			)
 		}
 
