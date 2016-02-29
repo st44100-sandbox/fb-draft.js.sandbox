@@ -13,6 +13,7 @@ let rawContent = {
 			{
 				text: 'http://41.media.tumblr.com/bb99b1b99a707ce36f95a14e92247d97/tumblr_nrhfswPPGQ1ub5poho1_500.png',
 				type: 'image',
+				entityRanges: [{offset: 0, length: 10, key: 'a-imageblock'}],
 			},
 			{
 				text: '',

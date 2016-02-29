@@ -19,6 +19,20 @@ import DummyContent from './dummyContent'
 
 let a = DummyContent
 
+
+class ImageBlock extends React.Component {
+  render() {
+    const {block, foo} = this.props;
+		let url = block.getText()
+    //const data = Entity.get(block.getEntityAt(0)).getData();
+		return (
+			<img src={url}/>
+		)
+  }
+}
+
+
+
 // MISSING keybinding on v0.1.0
 // const {hasCommandModifier} = KeyBindingUtil;
 // function customKeyBind (e) {
@@ -35,8 +49,6 @@ export default class MyEditor extends React.Component {
     super(props)
 		function getImageEntityStrategy (mutability) {
 			return function (contentBlock, callback) {
-				// getType: block type
-				// getText: Text node.
 				if (contentBlock.getType() === 'image') {
 					return true
 				} else {
@@ -123,6 +135,18 @@ export default class MyEditor extends React.Component {
     const {editorState} = this.state
     this.onChange(RichUtils.toggleInlineStyle(editorState, 'BOLD'));
   }
+	
+	_customBlockRenderer (contentBlock) {
+		const type = contentBlock.getType()
+		if (type === 'image') {
+			return {
+				component: ImageBlock,
+				props: {
+					url: 'URL'
+				}
+			}
+		}
+	}
 
   render () {
 		function blockStyleFn(contentBlock) {
@@ -138,6 +162,7 @@ export default class MyEditor extends React.Component {
           editorState={editorState}
           handleKeyCommand={this.handleKeyCommand.bind(this)}
 					blockStyleFn={blockStyleFn}
+					blockRendererFn={this._customBlockRenderer}
           onChange={this.onChange}
         />
       </div>
