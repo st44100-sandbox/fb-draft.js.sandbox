@@ -10,12 +10,24 @@ import {
   convertToRaw,
   CompositeDecorator,
   ContentState,
-  Entity
+  Entity,
+	//getDefaultKeyBinding,
+	//KeyBindingUtil
 } from 'draft-js';
+
 import DummyContent from './dummyContent'
 
 let a = DummyContent
 
+// MISSING keybinding on v0.1.0
+// const {hasCommandModifier} = KeyBindingUtil;
+// function customKeyBind (e) {
+// 	if (e.keyCode === 83 && hasCommandModifier(e)) {
+// 		return 'myeditor-save'
+// 	} else {
+// 		return getDefaultKeyBinding(e)
+// 	}
+// }
 
 export default class MyEditor extends React.Component {
 
@@ -95,6 +107,10 @@ export default class MyEditor extends React.Component {
 	handleKeyCommand (cmd) {
   	const {editorState} = this.state
   	const newState = RichUtils.handleKeyCommand(editorState, cmd)
+		
+		// if (cmd === 'myeditor-save') {
+		// 	debugger
+    // }
 
   	if (newState) {
     	this.onChange(newState)
