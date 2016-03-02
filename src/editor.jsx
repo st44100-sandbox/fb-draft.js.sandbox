@@ -1,5 +1,3 @@
-console.log('Facebook Draft.js')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
@@ -11,15 +9,21 @@ import {
   CompositeDecorator,
   ContentState,
   Entity,
+  Modifier,
+  // MISSING keybinding on v0.1.0
 	//getDefaultKeyBinding,
 	//KeyBindingUtil
 } from 'draft-js';
 
 import DummyContent from './dummyContent'
 
+// Custom Style Mapping.
+import customStyleMap from './customStyleMap'
+
 let a = DummyContent
 
 
+// #94c6824 currently there is a bug to cut/copy/paset image block.
 class ImageBlock extends React.Component {
   render() {
     const {block, foo} = this.props;
@@ -47,54 +51,17 @@ export default class MyEditor extends React.Component {
 
   constructor (props) {
     super(props)
-		function getImageEntityStrategy (mutability) {
-			return function (contentBlock, callback) {
-				if (contentBlock.getType() === 'image') {
-					return true
-				} else {
-					return false
-				}
-			}
-		}
-		function getEntityStrategy () {
-			return function (contentBlock, callback) {
-  			const text = contentBlock.getText();
-  			let matchArr, start;
-				let count = 0
-				contentBlock.findEntityRanges(
-					(character) => {
-						const entityKey = character.getEntity();
-						console.log(character, entityKey)
-						if (entityKey === null) {
-							return false;
-						} else {
-							return true;
-						}
-						//return Entity.get(entityKey).getMutability() === mutability;
-					},
-					callback
-				);
-			}
-		}
 
-		const TokenSpan = (props) => {
-			const style = {
-				color: 'red'
-			} 
-			return (
-				<span {...props} style={style}>
-					[Entity]
-					{props.children}
-					[/Entity]
-				</span>
-			)
-		}
-
+    // Create decorator.
 		const decorator = new CompositeDecorator([
 			{
-				strategy: getEntityStrategy(),
-				component: TokenSpan
-			}
+				strategy: this._getEntityStrategy(),
+				component: this._spanComp
+			},
+			// {
+			// 	strategy: this._getImageEntityStrategy(),
+			// 	component: this._spanComp
+			// }
 		])
 
 		// Start with Empty.
@@ -113,7 +80,58 @@ export default class MyEditor extends React.Component {
   	this.onChange = (editorState) => {
     	this.setState({editorState});
   	};
-	}
+  }
+
+  /**
+   * Decorator Storategy for Image.
+   */
+  _getImageEntityStrategy () {
+    return function (contentBlock, callback) {
+      if (contentBlock.getType() === 'image') {
+        return true
+      } else {
+        return false
+      }
+    }
+  }
+
+
+  /**
+   * Decorator Storategy for Entity.
+   */
+  _getEntityStrategy () {
+    return function (contentBlock, callback) {
+      const text = contentBlock.getText();
+      let matchArr, start;
+      let count = 0
+      contentBlock.findEntityRanges(
+        (character) => {
+          const entityKey = character.getEntity();
+          console.log(character, entityKey)
+          if (entityKey === null) {
+            return false;
+          } else {
+            return true;
+          }
+          //return Entity.get(entityKey).getMutability() === mutability;
+        },
+        callback
+      );
+    }
+  }
+
+  _spanComp (props) {
+    const style = {
+      color: 'red'
+    } 
+    return (
+      <span {...props} style={style}>
+        [Entity]
+        {props.children}
+        [/Entity]
+      </span>
+    )
+  }
 
 	handleKeyCommand (cmd) {
   	const {editorState} = this.state
@@ -135,8 +153,16 @@ export default class MyEditor extends React.Component {
     const {editorState} = this.state
     this.onChange(RichUtils.toggleInlineStyle(editorState, 'BOLD'));
   }
+
+  _onClickStrike () {
+    const {editorState}  = this.state
+    const selection = editorState.getSelection()
+
+    const nextEditorState = RichUtils.toggleInlineStyle(editorState, 'STRIKETHROUGH')
+    this.onChange(nextEditorState);
+  }
 	
-	_customBlockRenderer (contentBlock) {
+  customBlockRenderer (contentBlock) {
 		const type = contentBlock.getType()
 		if (type === 'image') {
 			return {
@@ -153,17 +179,20 @@ export default class MyEditor extends React.Component {
 			if (contentBlock.getType() === 'image') {
 				return 'block-image'
 			}
-		}
+    }
+
     const {editorState} = this.state;
     return (
       <div>
         <button onClick={this._onClickBold.bind(this)} >Bold</button>
+        <button onClick={this._onClickStrike.bind(this)} >Strike</button>
         <Editor
           editorState={editorState}
           handleKeyCommand={this.handleKeyCommand.bind(this)}
 					blockStyleFn={blockStyleFn}
 					blockRendererFn={this._customBlockRenderer}
           onChange={this.onChange}
+          customStyleMap={customStyleMap}
         />
       </div>
       )
